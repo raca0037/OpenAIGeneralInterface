@@ -1,131 +1,108 @@
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'MainWindow_ControlHub.ui'
-# updated march 5, 2022.
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
 #Goal is to have this file be a class to just call into ControlHubIntegration.py
-import gym
-import matplotlib.pyplot as plt
 from PyQt5 import QtCore, QtGui, QtWidgets
-# TODO import the interface stuff
-import ControlHubInterface #check if this is correct syntax later.
-"""
-https://gym.openai.com/envs/CarRacing-v0/
+#class giving us our main display window:
+class Ui_MainWindow(object):
+   # action = a #initializing variable action
 
-Actions: (direction, gas, brake)
-    direction is left (-1) or right (+1)
-    gas is off (0) or on (+1)
-    brake is off (0) or on (+1)
+    def __init__(self, q):
+       self._reward = 0.0
+       self._action = ''
+       self.a = (0, 0, 0)
+       self.q = q
 
-## Original gym ai file
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(962, 784)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.Gas_Button = QtWidgets.QPushButton(self.centralwidget, clicked = lambda: self.get_action("W"))
+        self.Gas_Button.setGeometry(QtCore.QRect(390, 180, 150, 150))
+        font = QtGui.QFont()
+        font.setFamily("Umpush")
+        font.setPointSize(41)
+        font.setBold(True)
+        font.setItalic(False)
+        font.setWeight(75)
+        self.Gas_Button.setFont(font)
+        self.Gas_Button.setObjectName("Gas_Button")
+        self.Turn_Right = QtWidgets.QPushButton(self.centralwidget, clicked = lambda: self.get_action("D"))
+        self.Turn_Right.setGeometry(QtCore.QRect(540, 330, 150, 150))
+        font = QtGui.QFont()
+        font.setFamily("Umpush")
+        font.setPointSize(41)
+        font.setBold(True)
+        font.setItalic(False)
+        font.setWeight(75)
+        self.Turn_Right.setFont(font)
+        self.Turn_Right.setObjectName("Turn_Right")
+        self.Turn_Left = QtWidgets.QPushButton(self.centralwidget, clicked = lambda: self.get_action("A"))
+        self.Turn_Left.setGeometry(QtCore.QRect(240, 330, 150, 150))
+        font = QtGui.QFont()
+        font.setFamily("Umpush")
+        font.setPointSize(41)
+        font.setBold(True)
+        font.setItalic(False)
+        font.setWeight(75)
+        self.Turn_Left.setFont(font)
+        self.Turn_Left.setObjectName("Turn_Left")
+        self.Brake_Button = QtWidgets.QPushButton(self.centralwidget, clicked = lambda: self.get_action("S"))
+        self.Brake_Button.setGeometry(QtCore.QRect(390, 480, 150, 150))
+        font = QtGui.QFont()
+        font.setFamily("Umpush")
+        font.setPointSize(41)
+        font.setBold(True)
+        font.setItalic(False)
+        font.setWeight(75)
+        self.Brake_Button.setFont(font)
+        self.Brake_Button.setObjectName("Brake_Button")
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 962, 22))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
 
-pip install gym
-pip install matplotlib
-"""
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-# Global variable to capture keyboard input
-control_action = 0
+#Action function for the interface, will result in action in the racecar when pressed.
+    def get_action(self, pressed): #need to fix what a will mean, main.py used a control variable to log action being taken on keyboard vs. action imported into display.
 
-
-class race_car:
-    """
-    Interface for controlling the race car
-    """
-
-    def __init__(self):
-        self._reward = 0.0
-        self._action = ''
-
-    def display(self, img_array, reward, done):
-        """
-        Display the image and data to the user
-
-        :param img_array:
-        :param reward:
-        :param done:
-        :return:
-        """
-        self._reward += reward
-        plt.imshow(img_array)
-        cumulative_reward_string = "Cumulative reward: {:.2f}".format(self._reward)
-        done_string = "Done: {}".format(done)
-        action_string = "Action: {}".format(self._action)
-        data_string = "{}\n{}\n{}".format(cumulative_reward_string, done_string, action_string)
-        plt.title(data_string)
-        plt.draw()
-        plt.pause(0.00001)
-        plt.clf()
-
-
-
-    # def key_press(key, mod):
-    """
-    Capture key press events
-    :param key:
-    :param mod:
-    :return:
-    """
-    # global control_action
-    # a = int(key - ord('0'))
-    # control_action = a
-
-    # def key_release(key, mod):
-    """
-    Capture key release events
-    :param key:
-    :param mod:
-    :return:
-    """
-
-
-#   global control_action
-#  a = int(key - ord('0'))
-# if control_action == a:
-#    control_action = 0
-
-
-def run():
-    global control_action  # Global variable to capture keyboard input
-
-    # Start the race car environment
-    env = gym.make('CarRacing-v0')
-    env.reset()
-
-    # Used to keyboard input
-    # env.unwrapped.viewer.window.on_key_press = key_press
-    # env.unwrapped.viewer.window.on_key_release = key_release
-
-    car = race_car()
-    myWindow = ControlHubInterface.Ui_MainWindow()
-
-        #displaying the control hub interface by calling associating classes/functions
-    import sys
-    app = QtWidgets.QApplication(sys.argv) #calling QtWidget
-    MainWindow = QtWidgets.QMainWindow() #calling the main window class within controlhubinterface.py
-    ui = ControlHubInterface.Ui_MainWindow() #translating from ui -> .py.
-    ui.setupUi(MainWindow)
-    MainWindow.show() #diplaying control interface
-    #MainWindow.callback_pb_load()
-
-    #app.exec_()
-
-    while True:
-        # Get the action from the user
-        # TODO get the action from the interface instead
-        action = myWindow.a # calling the action function with ControlHubInterface to return action value
-        # Send the action to the racecar, get some information back
-        _, reward, done, _ = env.step(action)
-        # Get the rendered frame
-        arr = env.render(mode='human')
-
-        # Display the rendered frame and information to the user
-        #car.display(arr, reward, done)
-        # TODO send the data to the interface for display
+        if pressed == "S":
+            self.a = (0, 0, 1)
+            self._action = 'brake'  # feed in list of actions, assign an action to the list, to prevent changing lower level functions.
+        elif pressed == "W":
+            self.a = (0, 1, 0)
+            self._action = 'gas'
+        elif pressed == "A":
+            self.a = (-1, 0, 0)
+            self._action = 'left'
+        elif pressed == "D":
+            self.a = (+1, 0, 0)
+            self._action = 'right'
+        else:
+            self.a = (0, 0, 0)
+            self._action = ''
+        self.q.put(self.a)
+        # add the action into the queue.
 
 
-run()
+#GUI designer using a translater.
 
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow_ControlHub"))
+        self.Gas_Button.setText(_translate("MainWindow", "W"))
+        self.Turn_Right.setText(_translate("MainWindow", "D"))
+        self.Turn_Left.setText(_translate("MainWindow", "A"))
+        self.Brake_Button.setText(_translate("MainWindow", "S"))

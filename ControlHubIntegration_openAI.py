@@ -2,9 +2,13 @@ import gym
 import matplotlib.pyplot as plt
 from PyQt5 import QtCore, QtGui, QtWidgets
 # TODO import the interface stuff
-import ControlHubInterface #check if this is correct syntax later.
+import ControlHubInterface_openAI #check if this is correct syntax later.
+import threading #importing threading qualities.
+from queue import Queue
+from threading import Thread
 """
 https://gym.openai.com/envs/CarRacing-v0/
+#updated march 5th.
 
 Actions: (direction, gas, brake)
     direction is left (-1) or right (+1)
@@ -51,70 +55,62 @@ class race_car:
         plt.clf()
 
 
+def interface_function(q):
+    """ Needs to be outside the race_car class.
+    # copy all interface starting code here
+   # myWindow = ControlHubInterface_openAI.Ui_MainWindow() #starting running code for interface, moved from line 59 to main function
+   """
+    import sys
+    app = QtWidgets.QApplication(sys.argv)  # calling QtWidget, Qapplication is created.
+    MainWindow = QtWidgets.QMainWindow()  # calling the main window class within controlhubinterface.py
+    ui = ControlHubInterface_openAI.Ui_MainWindow(q)  # translating from ui -> .py.
+    ui.setupUi(MainWindow)
+    MainWindow.show()  # displaying control interface, end of starting code for interface.
+    #action = myWindow.a #Moved from openai_function to interface function: getting action variable from ControlHubInterface_openAI via button press on interface.
+    app.exec_() #executing interface
 
-    # def key_press(key, mod):
-    """
-    Capture key press events
-    :param key:
-    :param mod:
-    :return:
-    """
-    # global control_action
-    # a = int(key - ord('0'))
-    # control_action = a
-
-    # def key_release(key, mod):
-    """
-    Capture key release events
-    :param key:
-    :param mod:
-    :return:
-    """
-
-
-#   global control_action
-#  a = int(key - ord('0'))
-# if control_action == a:
-#    control_action = 0
+"""
+have action outputted from interface_function as the input of the open_ai.
+# want the action data from the interface to be inputted into open_ai function, then have the map updated.
+# will have the input "action" inputted into the below function. This will probably in the form of (0,0,0)
+"""
 
 
-def run():
-    global control_action  # Global variable to capture keyboard input
-
+def openai_function(q):
     # Start the race car environment
     env = gym.make('CarRacing-v0')
     env.reset()
-
-    # Used to keyboard input
-    # env.unwrapped.viewer.window.on_key_press = key_press
-    # env.unwrapped.viewer.window.on_key_release = key_release
-
     car = race_car()
-    myWindow = ControlHubInterface.Ui_MainWindow()
-
-        #displaying the control hub interface by calling associating classes/functions
-    import sys
-    app = QtWidgets.QApplication(sys.argv) #calling QtWidget
-    MainWindow = QtWidgets.QMainWindow() #calling the main window class within controlhubinterface.py
-    ui = ControlHubInterface.Ui_MainWindow() #translating from ui -> .py.
-    ui.setupUi(MainWindow)
-    MainWindow.show() #diplaying control interface
-    #MainWindow.callback_pb_load()
-
-    #app.exec_()
-
     while True:
         # Get the action from the user
         # TODO get the action from the interface instead
-        action = myWindow.a # calling the action function with ControlHubInterface to return action value
+
+        action = q.get() #getting action values from interface (producer) function into the queue for this consumer function (open ai) so it can run its data on the display.
         # Send the action to the racecar, get some information back
+        print(action)
         _, reward, done, _ = env.step(action)
         # Get the rendered frame
-        arr = env.render(mode='human')
+        arr = env.render(mode='rgb_array')
 
         # Display the rendered frame and information to the user
-        #car.display(arr, reward, done)
+        car.display(arr, reward, done)
         # TODO send the data to the interface for display
 
+
+def run():
+
+    """
+    The following code starts up our consumer (openaigym) and producer (interface) functions.... 
+    threads then use put() or get() operations to add or remove data from queue!
+    out_q basically assigns q a local variable within the t1 thread when we are assigning data to be produced. 
+    In our thread call though we just want to read in queue or "q" as defined in line 113.
+    """
+    q = Queue()
+    t1 = Thread(target=openai_function, args=(q,)) #where q represents all the data being communicated between the two threads via "queue"
+    t1.start()
+    interface_function(q,)#calling our function after the thread begins.
+"""
+When I put the map on it - it lags a whole lot and freezes the two windows. 
+"""
 
 run()
